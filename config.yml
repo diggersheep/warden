@@ -1,15 +1,62 @@
+# name of the file in any project
 target: .warden.yml
+# delay in ms between 2 check
 delay: 50
 
+# archive
 archive:
+  # name of the archive without extension
+  #   #{dirname} -> name of the current direcory
+  #   #{iter}    -> number of iteration of the archive
   name: "#{dirname}.#{iter}"
+  # format of the archive
+  #   only zip format for the moment
   format: "zip"
 
+# pre implemented commands
+#    #{file}     -> current file (path + base + ext )
+#    #{basename} -> name of the file without extension (e.g. "./src/warden.cr" -> "warden")
+#    #{extname}  -> pextension (e.g. "main.cr" -> "cr" ) 
+#    #{path}     -> path of the current file (e.g. "./src/warden.cr" -> "./src/")
+#    #{pwd}      -> absolute path of the current directory.
+#    #{cwd}      -> idem. More natural for C/C++/python users
+#    #{dirname}  -> name of the current direcory
+#
+#  - files -> glob for file analysis
+#    run   -> command to run for the files
+#    git   -> command git to run
+#             none | add | commit | push | pull
 precommand:
-  - files: ./**/*.cr
+  # crystal - sources
+  - files: ./src/**/*.cr
     run: shards build
     git: add
-
+  # some crystal files
+  - files: ./*.cr
+    run: "crystal run #{file}"
+    git: none
+  # shards
   - files: ./shards.yml
     run: shards update
+    git: add
+
+  # C sources
+  - files: ./src/*.c
+    run: "gcc -c #{file} -o #{basename}.o -O3 -Wall -Wextra"
+    git: add
+  - files: ./src/*.h
+    run: "gcc -c #{path}#{basename}.c -o #{basename}.o -O3 -Wall -Wextra"
+    git: add
+  - files: ./src/main.c
+    run: make -j
+    git: commit
+
+  # python
+  - files: ./*.py
+    run: "#{file} is changed"
+    git: add
+  
+  # java
+  - files: ./**/*.java
+    run: "javac #{file}"
     git: add
