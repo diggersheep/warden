@@ -1,0 +1,13 @@
+name: warden
+version: 0.1.0
+
+authors:
+  - diggersheep <alexandre.combeau@outlook.fr>
+
+targets:
+  warden:
+    main: src/warden.cr
+
+crystal: 0.22.0
+
+license: MIT

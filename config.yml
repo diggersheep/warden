@@ -1,0 +1,15 @@
+target: .guardian++.yml
+delay: 50
+
+archive:
+  name: "#{dirname}.#{iter}"
+  format: "zip"
+
+precommand:
+  - files: ./**/*.cr
+    run: shards build
+    git: add
+
+  - files: ./shards.yml
+    run: shards update
+    git: add
