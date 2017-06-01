@@ -1,4 +1,4 @@
-target: .guardian++.yml
+target: .warden.yml
 delay: 50
 
 archive:

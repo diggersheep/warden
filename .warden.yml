@@ -1,0 +1,12 @@
+auto-commit-message: "#{files} added"
+recursive-path: false
+
+watch:
+  - files: ./src/*.cr
+    run: shard build
+    git: add
+    recursive: true
+
+  - files: ./shard.yml
+    run: shards update
+    git: add
