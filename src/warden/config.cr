@@ -1,6 +1,8 @@
 require "yaml"
 
 module Config
+	class FileNotExistsException < Exception end
+	class NotGitCmdException < Exception end
 
 	# 
 	GIT = [
@@ -41,10 +43,6 @@ module Config
 				key:  "auto-commit-message",
 				type: String
 			},
-			recursive_path: {
-				key: "recursive-path",
-				type: Bool
-			},
 			watch: Array(YAML_Config_Command)
 		)
 	end
@@ -60,61 +58,90 @@ module Config
 	end
 
 	# load main configuration file and check some values
-	def self.load_config ( filename : String ) : (YAML_Config | Nil)
+	def self.load_config ( filename : String ) : Config::YAML_Config
 
 		data = "" # future file data
 
-		# load data
-		if File.file? filename
-			tmp = File.read filename
-			unless tmp.nil?
-				data = tmp.as String
-			else
-				return nil
-			end
-		else
-			return nil
+		unless File.file? filename # check if it's a file'
+			raise Config::FileNotExistsException.new
 		end
 
+		# load data
+		data = File.read filename # raise ERRNO
+
 		# parse yaml file (not handle exception)
-		conf = YAML_Config.from_yaml data
-	
-		unless conf.nil?
-			conf.precommand.each do |e|
-				unless check_git e.git
-					return nil
-				end
+		conf = YAML_Config.from_yaml data # raise YAML::ParseException
+
+		conf.precommand.each do |e|
+			unless check_git e.git
+				# invalid YAML variable
+				raise YAML::ParseException.new "", 0, 0
 			end
 		end
 		conf
 	end
 
-	def self.load_project ( filename : String ) : (Config::YAML_Project | Nil)
+	def self.load_project ( filename : String ) : Config::YAML_Project
 		data = "" # future file data
 
 		#load data
-		if File.file? filename
-			tmp = File.read filename
-			unless tmp.nil?
-				data = tmp.as String
-			else
-				return nil
-			end
-		else
-			return nil
+		unless File.exists? filename
+			raise Config::FileNotExistsException.new
 		end
 
+		data = File.read filename # raise ERRNO
+		
 		# parse yaml file (not handle exception)
 		conf = YAML_Project.from_yaml data
-		unless conf.nil?
-			conf.watch.each do |e|
-				unless check_git e.git
-					return nil
-				end
+
+		conf.watch.each do |e|
+			unless check_git e.git
+				raise YAML::ParseException.new "", 0, 0
 			end
+		end
+		conf
+	end
+
+	def self.load_config? ( filename : String ) : Config::YAML_Config
+		begin
+			config = Config.load_config filename
+		rescue Errno
+			STDERR << "You don't have permission for #{filename.colorize(:red)}!\n"
+			exit 1
+		rescue YAML::ParseException
+			# not valid
+			STDERR << "Fatal error! #{filename.colorize(:red)} is not valid!\n"
+			exit 1
+		rescue Config::FileNotExistsException
+			# not valid
+			STDERR << "#{filename.colorize(:red)} does not exists!\n"
+			exit 1
+		rescue
+			# not valid
+			STDERR << "#{filename.colorize(:red)} error!\n"
+			exit 1
+		end
+		config
+	end
+
+	def self.load_project? ( filename : String ) : Confi::YAML_Project
+		begin
+			project = Config.load_project filename
+		rescue Errno
+			STDERR << "You don't have permission for #{filename.colorize(:red)}!\n"
+			exit 1
+		rescue YAML::ParseException
+			# not valid
+			STDERR << "#{filename.colorize(:red)} is not valid!\n"
+			exit 1
+		rescue Config::FileNotExistsException
+			# not valid
+			STDERR << "#{filename.colorize(:red)} does not exists!\n"
+			exit 1
+		rescue
+			# not valid
+			STDERR << "#{filename.colorize(:red)} error!\n"
+			exit 1
 		end
 	end
 end
-
-
-Config.load_project ".guardian++.yml"
