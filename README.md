@@ -25,4 +25,3 @@ TODO: Write development instructions here
 ## Contributors
 
 - [[your-github-name]](https://github.com/diggersheep) diggersheep - creator, maintainer
- 
