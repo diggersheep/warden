@@ -1,7 +1,7 @@
 # name of the file in any project
 target: .warden.yml
 # delay in ms between 2 check
-delay: 50
+delay: 500
 
 # archive
 archive:
@@ -31,12 +31,17 @@ precommand:
   - files: ./src/**/*.cr
     run: shards build
     git: add
+  # crystal spec
+  - files: ./spec/**/*.cr
+    run: "echo \"#{file} is changed\""
+    git: add
+
   # some crystal files
   - files: ./*.cr
     run: "crystal run #{file}"
     git: none
   # shards
-  - files: ./shards.yml
+  - files: ./shard.yml
     run: shards update
     git: add
 
@@ -52,7 +57,7 @@ precommand:
     git: commit
 
   # python
-  - files: ./*.py
+  - files: ./**/*.py
     run: "#{file} is changed"
     git: add
   
@@ -60,3 +65,8 @@ precommand:
   - files: ./**/*.java
     run: "javac #{file}"
     git: add
+
+  # shell / bash
+  - files: ./**/*.sh
+    run: "#{file} is changed"
+    git: none

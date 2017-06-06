@@ -1,12 +1,22 @@
-auto-commit-message: "#{files} added"
-recursive-path: false
-
+auto-commit-message: "#{git-auto}"
 watch:
-  - files: ./src/*.cr
-    run: shard build
+
+  - files: ./*.cr
+    run: "crystal run #{file}"
+    git: none
+
+  - files: ./src/**/*.cr
+    run: "shards build"
     git: add
-    recursive: true
+
+  - files: ./spec/**/*.cr
+    run: "echo \"#{file} is changed\""
+    git: add
 
   - files: ./shard.yml
-    run: shards update
+    run: "shards update"
     git: add
+
+  - files: ./*.py
+    run: "echo \"#{file} is changed\""
+    git: pull
