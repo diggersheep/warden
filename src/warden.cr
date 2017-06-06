@@ -60,8 +60,6 @@ if ARGV[0]?
     end
 end
 
-
-puts config.delay
 # PROJECT CONFIG FILE
 project = Config.load_project config.target
 
