@@ -2,7 +2,7 @@ auto-commit-message: "#{git-auto}"
 watch:
 
   - files: ./*.cr
-    run: "crystal run #{file}"
+    run: "crystal build #{file}"
     git: none
 
   - files: ./src/**/*.cr
@@ -19,4 +19,4 @@ watch:
 
   - files: ./*.py
     run: "echo \"#{file} is changed\""
-    git: pull
+    git: none

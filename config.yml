@@ -1,7 +1,7 @@
 # name of the file in any project
 target: .warden.yml
-# delay in ms between 2 check
-delay: 500
+# delay in ms between 2 check ( min = 250ms )
+delay: 1000
 
 # archive
 archive:

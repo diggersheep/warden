@@ -22,6 +22,9 @@ module Warden
 			@archive = Archive.new
 
 			@files = [] of NamedTuple(file: String, run: String, git: String, mtime: Time)
+			if config.delay < 250_u32
+				config.delay = 250_u32
+			end
 
 			@project.watch.each do |watcher|
 				Dir.glob( watcher.files ).each do |file|
@@ -84,22 +87,44 @@ module Warden
 		end
 
 		private def run_cmd ( str_cmd : String )
+			puts "#{"$".colorize(:dark_gray)} #{str_cmd.colorize(:light_blue)}"
+			cmd = `#{str_cmd}`
+			cmd.lines.each do |line|
+				puts "#{">".colorize(:dark_gray)}   #{line}"
+			end
+		end
+		private def puts_diff ( filename : String )
+			if File.directory? ".git"
+				git = `which git`.chomp
+				unless git.empty?
+					git_stat = `#{git} diff --shortstat -- #{filename}`.split(", ")
+					if git_stat.size > 1
+						str = git_stat[1,git_stat.size - 1].join(", ").colorize(:yellow)
+						puts "  #{"->".colorize(:light_yellow)} #{str}"
+#						puts "\\ #{git_stat[1]} #{git_stat[1]}"
+					end
+				end
+			end
 		end
 
 		private def run_git ( file : NamedTuple(file: String, run: String, git: String, mtime: Time) )
 			case file[:git]
 			when "none" #do nothing
 			when "add"
-				puts `git add #{file[:file]} && echo "git add #{file[:file]}"`
-				puts "  git add #{file[:file]}".colorize(:dark_gray)
+				puts `git add #{file[:file]}`
+				puts "  git add #{file[:file]}".colorize(:light_gray)
 				unless @added_files.includes? file[:file]
 					@added_files << file[:file]
-				end
+				end                                      
+			when "commit"
+#				msg = ""
+#				puts "  git commit -m \"#{msg}\""
+				@added_files.clear
 			when "pull"
-				puts "  git pull".colorize(:dark_gray)
+				puts "  git pull".colorize(:light_gray)
 				`git pull`
 			when "push"
-				puts "  git push".colorize(:dark_gray)
+				puts "  git push".colorize(:light_gray)
 				`git push`
 			end
 		end
@@ -144,12 +169,12 @@ module Warden
 			# ± = U+00B1 unicode for plus-minus sign
 			changed_files.each do |file|
 				puts "#{"\u{00B1}".colorize(:light_yellow)} #{"changed".colorize(:yellow)} #{file[:file]}"
+				puts_diff file[:file]
 				run_cmd file[:run]
 				run_git file
 			end
 
-			puts
-			@added_files.each { |e| puts e }
+			#@added_files.each { |e| puts e }
 
 			@files = files_bis
 		end
@@ -225,6 +250,13 @@ module Warden
 			cmd = cmd.gsub /\#\{*\}/, filename
 			cmd
 		end
+
+		def run
+			loop do
+				iter
+				sleep @config.delay / 1000.0
+			end
+		end
 	end
 end
 
@@ -235,13 +267,6 @@ config = Config.load_config? filename
 # PROJECT
 project = Config.load_project config.target
 
-
-`touch hello.py`
 # WATCHER
 watcher = Warden::Watcher.new config, project
-`rm hello.py`
-`touch app.py src/warden.cr`
-`touch hello_bite.cr`
-watcher.iter
-
-`rm hello_bite.cr`
+watcher.run
