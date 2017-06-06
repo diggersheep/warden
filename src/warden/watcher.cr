@@ -1,6 +1,10 @@
 require "file_utils"
 require "colorize"
 
+
+# TODO
+#   - Fix deleted_files()
+
 module Warden
 	class Watcher
 		@config  : Config::YAML_Config
@@ -67,18 +71,21 @@ module Warden
 			false
 		end
 
+		private def is_in_files_bis ( filename : String, files_bis : Array(NamedTuple(file: String, run: String, git: String, mtime: Time)) )
+			@files.each do |file|
+				if file[:file] == filename
+					return true
+				end
+			end
+			false
+		end
+
 		private def deleted_files ( files : Array(NamedTuple(file: String, run: String, git: String, mtime: Time)) )
 			tmp = typeof(@files).new
 
 			files.each do |file|
-				check = true
-				@files.each do |f|
-					if f[:file] == file[:file]
-						check = false
-						break
-					end
-				end
-				if check
+				unless is_in_files_bis file[:file], files
+					puts file[:file]
 					tmp << file
 				end
 			end
@@ -111,8 +118,8 @@ module Warden
 			case file[:git]
 			when "none" #do nothing
 			when "add"
-				puts `git add #{file[:file]}`
-				puts "  git add #{file[:file]}".colorize(:light_gray)
+				`git add #{file[:file]}`
+				puts "  git add #{file[:file]}".colorize(:dark_gray)
 				unless @added_files.includes? file[:file]
 					@added_files << file[:file]
 				end                                      
@@ -121,10 +128,10 @@ module Warden
 #				puts "  git commit -m \"#{msg}\""
 				@added_files.clear
 			when "pull"
-				puts "  git pull".colorize(:light_gray)
+				puts "  git pull".colorize(:dark_gray)
 				`git pull`
 			when "push"
-				puts "  git push".colorize(:light_gray)
+				puts "  git push".colorize(:dark_gray)
 				`git push`
 			end
 		end
@@ -260,13 +267,4 @@ module Warden
 	end
 end
 
-filename = "config.yml"
 
-# CONFIG
-config = Config.load_config? filename
-# PROJECT
-project = Config.load_project config.target
-
-# WATCHER
-watcher = Warden::Watcher.new config, project
-watcher.run
