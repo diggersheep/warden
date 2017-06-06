@@ -1,6 +1,6 @@
 # warden
 
-TODO: Write a description here
+Based on [Guardian](https://github.com/f/guardian)
 
 ## Installation
 
