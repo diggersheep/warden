@@ -1,6 +1,6 @@
 # Warden
 
-
+![Warden](http://i.imgur.com/Bztrb55.png)
 
 Based on [Guardian](https://github.com/f/guardian)
 
