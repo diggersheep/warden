@@ -14,16 +14,12 @@ module Warden
 		@changed_files : Array(String)
 		@removed_files : Array(String)
 
-		@archive : Archive
-
 		@files : Array(NamedTuple(file: String, run: String, git: String, mtime: Time))
 
 		def initialize ( @config, @project )
 			@added_files   = [] of String
 			@changed_files = [] of String
 			@removed_files = [] of String
-
-			@archive = Archive.new
 
 			@files = [] of NamedTuple(file: String, run: String, git: String, mtime: Time)
 			if config.delay < 250_u32
@@ -47,10 +43,12 @@ module Warden
 					end
 				end
 			end
-			# ⚝ = U+269D unicode for outlined white star
-			# ♖ = U+2656 unicode for white chess rook
-			# ♜ = U+265C unicode for black chess rook
-			puts "\u{265C} The warden is closely watching your files!".colorize(:light_blue) 
+			{% if :windows %} # Windows console doesn't support unicode charactrers
+				puts "The warden is closely watching your files!".colorize(:cyan)
+			{% else %}
+				# ♜ = U+265C unicode for black chess rook
+				puts "\u{265C} The warden is closely watching your files!".colorize(:cyan) 
+			{% end %}
 		end
 
 		private def is_new? ( filename : String ) : Bool
@@ -94,7 +92,7 @@ module Warden
 		end
 
 		private def run_cmd ( str_cmd : String )
-			puts "#{"$".colorize(:dark_gray)} #{str_cmd.colorize(:light_blue)}"
+			puts "#{"$".colorize(:dark_gray)} #{str_cmd.colorize(:cyan)}"
 			cmd = `#{str_cmd}`
 			cmd.lines.each do |line|
 				puts "#{">".colorize(:dark_gray)}   #{line}"
@@ -108,7 +106,7 @@ module Warden
 					if git_stat.size > 1
 						str = git_stat[1,git_stat.size - 1].join(", ").colorize(:yellow)
 						puts "  #{"->".colorize(:light_yellow)} #{str}"
-#						puts "\\ #{git_stat[1]} #{git_stat[1]}"
+
 					end
 				end
 			end
@@ -124,8 +122,6 @@ module Warden
 					@added_files << file[:file]
 				end                                      
 			when "commit"
-#				msg = ""
-#				puts "  git commit -m \"#{msg}\""
 				@added_files.clear
 			when "pull"
 				puts "  git pull".colorize(:dark_gray)
@@ -184,23 +180,6 @@ module Warden
 			#@added_files.each { |e| puts e }
 
 			@files = files_bis
-		end
-
-		# subsitutions for archive name
-		private def sub_archive
-			name = @config.archive.name
-
-			dirname = FileUtils.pwd
-			if dirname.split(File::SEPARATOR).size > 0
-				dirname = dirname.split(File::SEPARATOR)[-1]
-			else
-				dirname = ""
-			end
-
-			name = name.sub "\#{dirname}", dirname
-			name = name.sub "\#{iter}", @archive.iter
-
-			name + '.' + @config.archive.format
 		end
 
 		# subsitutions for git commit auto messgae

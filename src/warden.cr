@@ -8,9 +8,9 @@ class OptionParser
     # exactly like original but colorized
     private def append_flag(flag, description)
         if flag.size >= 33
-            @flags << "    #{flag.colorize(:light_blue)}\n#{" " * 37}#{description}"
+            @flags << "    #{flag.colorize(:cyan)}\n#{" " * 37}#{description}"
         else
-            @flags << "    #{flag.colorize(:light_blue)}#{" " * (33 - flag.size)}#{description}"
+            @flags << "    #{flag.colorize(:cyan)}#{" " * (33 - flag.size)}#{description}"
         end
     end
 end
@@ -27,8 +27,8 @@ if ARGV[0]?
     OptionParser.parse! do |opt|
         opt.banner = banner
         opt.on "-v", "--version", "Show the version" do
-            puts "#{"Warden".colorize(:light_blue)} v#{Warden::VERSION}"
-            
+            puts "#{"Warden".colorize(:cyan)} v#{Warden::VERSION} #{"(#{Warden::RELEASE_DATE})".colorize(:light_gray)}"
+            exit
         end
         opt.on "-h", "--help", "Show this help" do
             puts opt
@@ -49,6 +49,11 @@ if ARGV[0]?
             end
         end
 
+        opt.on "-i", "--init", "Generate " do
+            Warden::Generator.new config
+            exit
+        end
+
         opt.invalid_option do
             puts opt
             exit 1
@@ -61,7 +66,11 @@ if ARGV[0]?
 end
 
 # PROJECT CONFIG FILE
-project = Config.load_project config.target
+project = Config.load_project? config.target
+
+{% if :windows %}
+    puts "win"
+{% end %}
 
 # WATCHER
 watcher = Warden::Watcher.new config, project
