@@ -124,7 +124,7 @@ module Config
 		config
 	end
 
-	def self.load_project? ( filename : String ) : Confi::YAML_Project
+	def self.load_project? ( filename : String ) : Config::YAML_Project
 		begin
 			project = Config.load_project filename
 		rescue Errno
