@@ -27,7 +27,7 @@ if ARGV[0]?
     OptionParser.parse! do |opt|
         opt.banner = banner
         opt.on "-v", "--version", "Show the version" do
-            puts "#{"Warden".colorize(:cyan)} v#{Warden::VERSION} #{"(#{Warden::RELEASE_DATE})".colorize(:light_gray)}"
+            Warden.print_version
             exit
         end
         opt.on "-h", "--help", "Show this help" do
