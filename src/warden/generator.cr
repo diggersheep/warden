@@ -3,16 +3,18 @@ require "colorize"
 module Warden
     class Generator
         @config  : Config::YAML_Config
-        @project : String
 
         def initialize ( @config )
-            @project =  "auto-commit-message: \"\#\{git-auto\}\"\n"
-            @project += "watch:\n"
+            project =  "auto-commit-message: \"\#\{git-auto\}\"\n"
+            project += "watch:\n"
+
+            msg = [] of String
 
             data = ""
             @config.precommand.each do |watcher|
                 if Dir.glob(watcher.files).size > 0
-                    puts watcher.files
+                    msg << watcher.files
+
                     data += "\n"
                     data += "  - files: #{watcher.files}\n"
                     data += "    run: \"#{watcher.run}\"\n"
@@ -21,13 +23,20 @@ module Warden
             end
             
             if data == ""
-                void_project
+                project += void_project
             else
-                @project += data
+                project += data
             end
 
             unless File.file? config.target
-                File.write config.target, @project
+                puts "The Warden is watching is your have some files to monitor".colorize(:cyan)
+                if msg.empty?
+                    puts "#{"Warden :".colorize(:cyan)} #{"I don't find any specific file! But I can watch others for you :)".colorize(:light_cyan)}"
+                else
+                    puts "#{"Warden :".colorize(:cyan)} #{"I found some specific files for you! :)".colorize(:light_cyan)}"
+                    msg.each { |s| puts "           - #{s}".colorize(:light_cyan) }
+                end
+                File.write config.target, project
             else
                 puts "#{config.target.colorize(:yellow)} already exists!"
                 exit 0
@@ -35,9 +44,10 @@ module Warden
         end
         
         private def void_project
-            @project += "  - files: ./**/*\n"
-            @project += "    run: echo \"\#\{file\} is changed\"\n"
-            @project += "    git: none\n"
+            s  = "  - files: ./**/*\n"
+            s += "    run: echo \"\#\{file\} is changed\"\n"
+            s += "    git: none\n"
+            s
         end
     end
 end
