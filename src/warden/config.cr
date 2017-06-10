@@ -1,4 +1,5 @@
 require "yaml"
+require "colorize"
 
 module Config
 	class FileNotExistsException < Exception end
@@ -18,6 +19,7 @@ module Config
 		YAML.mapping(
 			target: String,
 			delay:  UInt32,
+			timeout: UInt32,
 			archive: YAML_Config_Archive,
 			precommand: Array( YAML_Config_Command )
 		)
@@ -40,8 +42,13 @@ module Config
 	class YAML_Project
 		YAML.mapping(
 			auto_commit_message: {
+				type: String,
 				key:  "auto-commit-message",
-				type: String
+				nilable: true
+			},
+			timeout: {
+				type: UInt32,
+				nilable: true
 			},
 			watch: Array(YAML_Config_Command)
 		)
@@ -59,6 +66,8 @@ module Config
 
 	# load main configuration file and check some values
 	def self.load_config ( filename : String ) : Config::YAML_Config
+		min_timeout = 100_u32
+		min_delay   = 250_u32
 
 		data = "" # future file data
 
@@ -78,6 +87,14 @@ module Config
 				raise YAML::ParseException.new "", 0, 0
 			end
 		end
+
+		if conf.delay < min_delay
+			conf.delay = min_delay
+		end
+		if conf.timeout < min_timeout
+			conf.timeout = min_timeout
+		end
+
 		conf
 	end
 
@@ -99,6 +116,12 @@ module Config
 				raise YAML::ParseException.new "", 0, 0
 			end
 		end
+
+		#  auto complete
+		if conf.auto_commit_message.nil?
+			conf.auto_commit_message = "\#{git-auto}"
+		end
+
 		conf
 	end
 

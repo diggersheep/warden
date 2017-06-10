@@ -3,6 +3,7 @@ require "./option_parser"
 
 filename = "config.yml"
 
+
 class OptionParser
     # override of appendd_flag method for colorized print
     # exactly like original but colorized
@@ -18,10 +19,18 @@ end
 # CONFIG
 config = Config.load_config? filename
 
+# PROJECT CONFIG FILE
+project = Config.load_project? config.target
+
+# load project timeout
+unless project.timeout.nil?
+    config.timeout = project.timeout.as UInt32
+end
+
 banner =  "#{"usage :".colorize(:dark_gray)} #{"warden".colorize(:green)} "
 banner += "#{"[-v|--version]".colorize(:light_green)}"
 banner += "#{"[-h|--help]".colorize(:light_green)}"
- 
+
 
 if ARGV[0]?
     OptionParser.parse! do |opt|
@@ -52,11 +61,11 @@ if ARGV[0]?
 
         opt.on "-t TIMEOUT", "--timeout=TIMEOUT", "Timeout in ms for command " do |timeout|
             begin
-                t = timeout.to_u32
-                if t < 250_u32
-                    t = 250_u32
+                unless timeout.to_u32 < 250_u32
+                    config.timeout = timeout.to_u32
+                else
+                    config.timeout = 250_u32
                 end
-                exit 0
             rescue
                 puts opt
                 exit 1
@@ -78,9 +87,6 @@ if ARGV[0]?
         end
     end
 end
-
-# PROJECT CONFIG FILE
-project = Config.load_project? config.target
 
 # WATCHER
 watcher = Warden::Watcher.new config, project
