@@ -2,6 +2,7 @@
 target: .warden.yml
 # delay in ms between 2 check ( min = 250ms )
 delay: 1000
+timeout: 2000
 
 # archive
 archive:
