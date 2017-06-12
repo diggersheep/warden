@@ -45,11 +45,6 @@ if ARGV[0]?
             exit
         end
 
-        opt.on "-h", "--help", "Show this help" do
-            puts opt
-            exit
-        end
-
         opt.on "-d DELAY", "--delay=DELAY", "Show this help" do |delay|
             begin
                 config.delay = delay.to_u32
