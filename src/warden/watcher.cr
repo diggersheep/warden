@@ -3,13 +3,13 @@ require "colorize"
 
 
 # TODO
-#   - completed git_run()
-#   - dynamic reload of .warden.yml when its changed
+#   - completed git_run() -> hint: git status --porcelain
 
 module Warden
 	class Watcher
 		@config  : Config::YAML_Config
 		@project : Config::YAML_Project
+		@project_mtime : Time | Nil
 		@coef = 2_u8
 
 		@added_files   : Array(String) # not used for now
@@ -19,6 +19,12 @@ module Warden
 		@files : Array(NamedTuple(file: String, run: String, git: String, mtime: Time))
 
 		def initialize ( @config, @project )
+			begin
+				@project_mtime = File::Stat.new(@config.target).mtime
+			rescue
+				@project_mtime = nil
+			end
+
 			@added_files   = [] of String
 			@changed_files = [] of String
 			@removed_files = [] of String
@@ -176,6 +182,20 @@ module Warden
 			changed_files = typeof(@files).new
 
 			files_bis = typeof(@files).new
+
+			# check .warden.yml file and reload it if necessary
+			begin
+				t = File::Stat.new(@config.target).mtime
+				if  @project_mtime.nil? || @project_mtime.as(Time) < t
+					@project_mtime = t
+					@project = Config.load_project? @config.target
+					errase_arrow
+					puts "#{"\u{00B1}".colorize(:light_yellow)} #{"project file has been updated! (#{@config.target})".colorize(:yellow)}"
+					print_arrow
+				end
+			rescue
+				# do nothing, if we can't access to .warden.yml, maybe next could ?
+			end
 
 			@project.watch.each do |watcher| # project config
 				Dir.glob watcher.files do |file| # each files

@@ -1,5 +1,5 @@
 module Warden
-  VERSION = "0.0.3"
+  VERSION = "0.0.4"
 
   # format YYYY-MM-DD
   {% if flag?(:windows) %}
