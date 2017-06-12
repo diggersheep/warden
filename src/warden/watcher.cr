@@ -3,16 +3,18 @@ require "colorize"
 
 
 # TODO
-#   - Fix deleted_files()
+#   - completed git_run()
+#   - dynamic reload of .warden.yml when its changed
 
 module Warden
 	class Watcher
 		@config  : Config::YAML_Config
 		@project : Config::YAML_Project
+		@coef = 2_u8
 
-		@added_files   : Array(String)
-		@changed_files : Array(String)
-		@removed_files : Array(String)
+		@added_files   : Array(String) # not used for now
+		@changed_files : Array(String) # not used for now
+		@removed_files : Array(String) # not used for now
 
 		@files : Array(NamedTuple(file: String, run: String, git: String, mtime: Time))
 
@@ -22,12 +24,10 @@ module Warden
 			@removed_files = [] of String
 
 			@files = [] of NamedTuple(file: String, run: String, git: String, mtime: Time)
-			if config.delay < 250_u32
-				config.delay = 250_u32
-			end
 
-			@project.watch.each do |watcher|
-				Dir.glob( watcher.files ).each do |file|
+			# check for each files in project config
+			@project.watch.each do |watcher| # project config
+				Dir.glob( watcher.files ).each do |file| # each files
 					if File.file? file
 						begin
 							tmp = {
@@ -37,20 +37,35 @@ module Warden
 								mtime: File::Stat.new(file).mtime
 							}
 							@files << tmp
-						rescue #Errno
+						rescue # File::Stat can raise Errno
 							# do nothing
 						end
 					end
 				end
 			end
-			{% if :windows %} # Windows console doesn't support unicode charactrers
+			
+
+
+			{% if flag?(:windows) %} # Windows console doesn't support unicode charactrers
 				puts "The warden is closely watching your files!".colorize(:cyan)
 			{% else %}
 				# ♜ = U+265C unicode for black chess rook
 				puts "\u{265C} The warden is closely watching your files!".colorize(:cyan) 
 			{% end %}
+			print_arrow
 		end
 
+		# print a simple arrow (greater symbol)
+		def print_arrow
+			print "> ".colorize(:dark_gray)
+		end
+		# erase two characters
+		def errase_arrow
+			print "\r\r"
+		end
+
+		# return a boolean
+		# false if file already exists in "@files" attrbute
 		private def is_new? ( filename : String ) : Bool
 			@files.each do |file|
 				if file[:file] == filename
@@ -60,6 +75,8 @@ module Warden
 			return true
 		end
 
+		# return a boolean
+		# true if file already exists on "@files" attrubute and m_time is different
 		private def is_changed? ( f : NamedTuple(file: String, run: String, git: String, mtime: Time) ) : Bool
 			@files.each do |file|
 				if (file[:file] == f[:file]) && (f[:mtime] != file[:mtime])
@@ -69,35 +86,56 @@ module Warden
 			false
 		end
 
-		private def is_in_files_bis ( filename : String, files_bis : Array(NamedTuple(file: String, run: String, git: String, mtime: Time)) )
-			@files.each do |file|
+		private def deleted? ( filename : String, new_files : Array(NamedTuple(file: String, run: String, git: String, mtime: Time)) )
+			# fichier supprimé si le fichier filename
+			# n'est pas dans new_files
+			
+			new_files.each do |file|
 				if file[:file] == filename
-					return true
+					return false
 				end
 			end
-			false
+			true
 		end
 
+		# return an array of all deleted files
 		private def deleted_files ( files : Array(NamedTuple(file: String, run: String, git: String, mtime: Time)) )
 			tmp = typeof(@files).new
 
-			files.each do |file|
-				unless is_in_files_bis file[:file], files
-					puts file[:file]
-					tmp << file
+			@files.each do |old_files|
+				if deleted? old_files[:file], files
+					tmp << old_files
 				end
 			end
 
 			tmp
 		end
 
-		private def run_cmd ( str_cmd : String )
-			puts "#{"$".colorize(:dark_gray)} #{str_cmd.colorize(:cyan)}"
-			cmd = `#{str_cmd}`
-			cmd.lines.each do |line|
-				puts "#{">".colorize(:dark_gray)}   #{line}"
+		# run the following cmd
+		private def run_cmd ( cmd_str : String ) : Bool
+
+			puts "#{"$".colorize(:dark_gray)} #{cmd_str.colorize(:light_gray)}"
+			timer = Time.new + (@config.timeout / 1000.0).seconds
+
+			# run cmd on a new processus
+			cmd = Process.new cmd_str, shell: true, output: true, input: true, error: true
+
+			# spawn a Fiber who kill the command processus if timer is out
+			# implementation with sleep to take less ressources than
+			# with a "while" loop
+			spawn do
+				sleep (@config.timeout / 1000.0)
+				unless cmd.terminated?
+					cmd.kill Signal::KILL
+					puts "    the command take more than #{(@config.timeout/1000.0).round(3)}s has been #{"killed".colorize(:red)} #{"(SIGKILL)".colorize(:dark_gray)}"
+				end
 			end
+
+			# wait the end of cmd
+			cmd.wait.success?
 		end
+
+		# print short git diff (addition et deletion) if it's possible
 		private def puts_diff ( filename : String )
 			if File.directory? ".git"
 				git = `which git`.chomp
@@ -112,6 +150,7 @@ module Warden
 			end
 		end
 
+		# Run the following git command
 		private def run_git ( file : NamedTuple(file: String, run: String, git: String, mtime: Time) )
 			case file[:git]
 			when "none" #do nothing
@@ -138,8 +177,8 @@ module Warden
 
 			files_bis = typeof(@files).new
 
-			@project.watch.each do |watcher|
-				Dir.glob watcher.files do |file|
+			@project.watch.each do |watcher| # project config
+				Dir.glob watcher.files do |file| # each files
 					begin
 						tmp = {
 							file: file,
@@ -159,25 +198,34 @@ module Warden
 				end
 			end
 
+			# for each deleted files detected
 			deleted_files(files_bis).each do |file|
+				errase_arrow
 				puts "#{"-".colorize(:light_red)} #{"deleted".colorize(:red)} #{file[:file]}"
+				print_arrow
 			end
 
+			# for each new files detected
 			new_files.each do |file|
+				errase_arrow
 				puts "#{"+".colorize(:light_green)} #{"added".colorize(:green)}   #{file[:file]}"
-				run_cmd file[:run]
-				run_git file
+				if run_cmd file[:run]
+					run_git file
+				end
+				print_arrow
 			end
 
 			# ± = U+00B1 unicode for plus-minus sign
+			# for each changed files detected
 			changed_files.each do |file|
+				errase_arrow
 				puts "#{"\u{00B1}".colorize(:light_yellow)} #{"changed".colorize(:yellow)} #{file[:file]}"
 				puts_diff file[:file]
-				run_cmd file[:run]
-				run_git file
+				if run_cmd file[:run]
+					run_git file
+				end
+				print_arrow
 			end
-
-			#@added_files.each { |e| puts e }
 
 			@files = files_bis
 		end
@@ -225,20 +273,20 @@ module Warden
 
 		# subsitutions for running commands
 		private def sub_run ( filename : String, cmd : String )
-			cmd = cmd.sub "\#\{\}", ""
-			cmd = cmd.sub "\#\{file\}", filename
-			cmd = cmd.sub "\#\{path\}", (File.dirname(filename) + File::SEPARATOR)
-			cmd = cmd.sub "\#\{basename\}", (File.basename(filename)[0, File.basename(filename).size - File.extname(filename).size])
-			cmd = cmd.sub "\#\{extname\}", File.extname(filename)
-			cmd = cmd.sub "\#\{pwd\}", FileUtils.pwd
-			cmd = cmd.sub "\#\{cwd\}", FileUtils.pwd
-			cmd = cmd.sub "\#\{dirname\}", FileUtils.pwd.split(File::SEPARATOR)[-1]
+			cmd = cmd.gsub "\#\{\}", ""
+			cmd = cmd.gsub "\#\{file\}", filename
+			cmd = cmd.gsub "\#\{path\}", (File.dirname(filename) + File::SEPARATOR)
+			cmd = cmd.gsub "\#\{basename\}", (File.basename(filename)[0, File.basename(filename).size - File.extname(filename).size])
+			cmd = cmd.gsub "\#\{extname\}", File.extname(filename)
+			cmd = cmd.gsub "\#\{pwd\}", FileUtils.pwd
+			cmd = cmd.gsub "\#\{cwd\}", FileUtils.pwd
+			cmd = cmd.gsub "\#\{dirname\}", FileUtils.pwd.split(File::SEPARATOR)[-1]
 			cmd = cmd.gsub /\#\{*\}/, filename
 			cmd
 		end
 
 		def run
-			loop do
+			while true
 				iter
 				sleep @config.delay / 1000.0
 			end
