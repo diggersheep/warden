@@ -1,20 +1,14 @@
 #!/bin/bash
 
-
-
-home=$(echo $HOME)
-name="/root"
-
-if ( $home !== $name ) ; then
-    echo "this script must be"
-    exit 1
-fi
-
 [ -d /usr/share/warden/ ] || mkdir /usr/share/warden/  --verbose
 
 echo "installation:"
 
 echo "RELEASE" > ./RELEASE
+
+echo "  - building a release of Warden"
+crystal build ./src/warden.cr -o ./bin/warden --release
+
 
 cp ./config.yml /usr/share/warden/config.yml
 if [[ -f /usr/share/warden/config.yml ]] ; then
@@ -46,6 +40,6 @@ else
     exit 1
 fi
 
-rm ./RELEASE
+echo > ./RELEASE
 
 echo "Installation finished"
