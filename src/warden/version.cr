@@ -1,5 +1,10 @@
 module Warden
-  VERSION = "0.0.4"
+  # 0.1.0
+  #   -> linux ready
+  #   -> can be un/install
+  #   -> dynamic .warden.yml load
+  #   -> don't support yet "git commit" feature
+  VERSION = "0.1.0"
 
   # format YYYY-MM-DD
   {% if flag?(:windows) %}

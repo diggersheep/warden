@@ -1,8 +1,6 @@
 require "./warden/*"
 require "./option_parser"
 
-filename = "config.yml"
-
 
 class OptionParser
     # override of appendd_flag method for colorized print
@@ -16,16 +14,15 @@ class OptionParser
     end
 end
 
+filename = "config.yml"
+
 # CONFIG
+{% if `cat RELEASE`.chomp.stringify.size != 0 %}
+	filename = "/usr/share/warden/#{filename}"
+{% end %}
+
 config = Config.load_config? filename
 
-# PROJECT CONFIG FILE
-project = Config.load_project? config.target
-
-# load project timeout
-unless project.timeout.nil?
-    config.timeout = project.timeout.as UInt32
-end
 
 banner =  "#{"usage :".colorize(:dark_gray)} #{"warden".colorize(:green)} "
 banner += "#{"[-v|--version]".colorize(:light_green)}"
@@ -81,6 +78,14 @@ if ARGV[0]?
             exit 1
         end
     end
+end
+
+# PROJECT CONFIG FILE
+project = Config.load_project? config.target
+
+# load project timeout
+unless project.timeout.nil?
+    config.timeout = project.timeout.as UInt32
 end
 
 # WATCHER
