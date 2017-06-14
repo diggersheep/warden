@@ -16,6 +16,8 @@ end
 
 filename = "config.yml"
 
+t_option = false
+
 # CONFIG
 {% if `cat RELEASE`.chomp.stringify.size != 0 %}
 	filename = "/usr/share/warden/#{filename}"
@@ -58,6 +60,7 @@ if ARGV[0]?
                 else
                     config.timeout = 250_u32
                 end
+                t_option = true
             rescue
                 puts opt
                 exit 1
@@ -84,7 +87,7 @@ end
 project = Config.load_project? config.target
 
 # load project timeout
-unless project.timeout.nil?
+if  !(project.timeout.nil?) && t_option
     config.timeout = project.timeout.as UInt32
 end
 

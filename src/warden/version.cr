@@ -1,4 +1,6 @@
 module Warden
+  # 0.1.2
+  #   -> fix timeout priority  (CLI  option > .warden.yml)
   # 0.1.1
   #   -> print nothing if "run" parameter in .warden.yml is empty
   # 0.1.0
@@ -6,7 +8,7 @@ module Warden
   #   -> can be un/install
   #   -> dynamic .warden.yml load
   #   -> don't support yet "git commit" feature
-  VERSION = "0.1.0"
+  VERSION = "0.1.2"
 
   # format YYYY-MM-DD
   {% if flag?(:windows) %}
