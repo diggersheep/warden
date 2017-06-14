@@ -1,4 +1,6 @@
 module Warden
+  # 0.1.1
+  #   -> print nothing if "run" parameter in .warden.yml is empty
   # 0.1.0
   #   -> linux ready
   #   -> can be un/install

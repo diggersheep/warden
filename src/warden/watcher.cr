@@ -119,6 +119,9 @@ module Warden
 
 		# run the following cmd
 		private def run_cmd ( cmd_str : String ) : Bool
+			if cmd_str.size == 0
+				return true
+			end
 
 			puts "#{"$".colorize(:dark_gray)} #{cmd_str.colorize(:light_gray)}"
 			timer = Time.new + (@config.timeout / 1000.0).seconds
