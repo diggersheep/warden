@@ -1,4 +1,6 @@
 module Warden
+  # 0.1.3
+  #   -> remove obsolete archive config (auto archive feature)
   # 0.1.2
   #   -> fix timeout priority  (CLI  option > .warden.yml)
   # 0.1.1
@@ -8,14 +10,10 @@ module Warden
   #   -> can be un/install
   #   -> dynamic .warden.yml load
   #   -> don't support yet "git commit" feature
-  VERSION = "0.1.2"
+  VERSION = "0.1.3"
 
   # format YYYY-MM-DD
-  {% if flag?(:windows) %}
-    RELEASE_DATE = {{ `echo %date:~6,4%-%date:~3,2%-%date:~0,2%`.chomp.stringify }}
-  {% else %}
-    RELEASE_DATE = {{ `date +'%Y-%H-%d'`.chomp.stringify }}
-  {% end%}
+  RELEASE_DATE = {{ `date +'%Y-%H-%d'`.chomp.stringify }}
 
   def self.print_version
     puts "#{"Warden".colorize(:cyan)} v#{VERSION} #{"(#{RELEASE_DATE})".colorize(:light_gray)}"

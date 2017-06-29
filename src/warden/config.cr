@@ -20,14 +20,7 @@ module Config
 			target: String,
 			delay:  UInt32,
 			timeout: UInt32,
-			archive: YAML_Config_Archive,
 			precommand: Array( YAML_Config_Command )
-		)
-	end
-	class YAML_Config_Archive
-		YAML.mapping(
-			name:   String,
-			format: String
 		)
 	end
 	class YAML_Config_Command

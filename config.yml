@@ -4,16 +4,6 @@ target: .warden.yml
 delay: 1000
 timeout: 2000
 
-# archive
-archive:
-  # name of the archive without extension
-  #   #{dirname} -> name of the current direcory
-  #   #{iter}    -> number of iteration of the archive
-  name: "#{dirname}.#{iter}"
-  # format of the archive
-  #   only zip format for the moment
-  format: "zip"
-
 # pre implemented commands
 #    #{file}     -> current file (path + base + ext )
 #    #{basename} -> name of the file without extension (e.g. "./src/warden.cr" -> "warden")
