@@ -22,12 +22,12 @@ For **Linux**:
 
 ## Usage
 
-### Create a project file
+## Create a project file
 
 `warden --init` or `warden --i` to create automatically a `.warden.yml` files, used by Wardan for.
 The project file is **simply a YAML file**
 
-### Write your `.warden.yml`
+## Write your `.warden.yml`
 
 For your `.warden.yml` file, you have some simple parameters:
 ```yaml
@@ -47,9 +47,9 @@ watch:
   - files: ./*.md # run no command for every .md in this folder
 ```
 
-#### `files` parameter
+### `files` parameter
 This option is the glob pattern of files.
-#### `git` option
+### `git` option
 This option is facultative, you have some values:
   - **none** -> no git command
   - **add** -> run `git add <your file>`
@@ -57,7 +57,7 @@ This option is facultative, you have some values:
   - **pull** -> run `git pull`
   - **commit** -> **_Comming Soon_**
   
-#### `run` option
+### `run` option
 This option is the following command to run when a file is changed.
 
 You have some specifics variables subsitution in this command to do make it easy to use, with the delimiter `#{}`.
@@ -73,10 +73,26 @@ Exemple for the file `./src/warden/version.cr` in `warden` folder:
 
 **_P.S.:_** You can propose new substitutions :) 
 
-### Your own configuration `config.yml`
 
+## Your own configuration `config.yml`
 
-### Run Warden
+You have similary configuration with `.warden.yml` like:
+  - `delay` in ms
+  - `timeout` in ms
+
+`target` is the target of the project file, by default it's `.warden.yml`
+
+The last parameter is the `precommand` parameter, it's exactly like `watch` parameter in project file, but it used in `$ warden --init` for auto configuration, please, don't fuck up your parameter ;)
+
+```yaml
+precommand:
+  # crystal - sources
+  - files: ./src/**/*.cr
+    run: shards build
+    git: add
+```
+
+## Run Warden
 
 Simply run `warden` command, easy no?
 
