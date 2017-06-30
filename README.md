@@ -1,6 +1,6 @@
-# Warden
+# ♜ Warden
 
-Quickly, **Warden** watches your files and run specific command.
+Quickly, **Warden** check periodically your files, run a specific command, and run a git command if you want and the command succeed. 
 
 ![Warden](http://i.imgur.com/KFJj0K9.png)
 
@@ -22,10 +22,35 @@ For **Linux**:
 
 ## Usage
 
+## Run Warden
+
+Simply run `warden` command, easy no?
+
+### Options
+
+* `$ warden -i`              : Init project file automatically
+* `$ warden --init`          : Init project file automatically
+
+* `$ warden -d 1500`         : change the delay (in ms) between to files watch (min = 250)
+* `$ warden --delay=1500`    : change the delay (in ms) between to files watch (min = 250)
+
+* `$ warden -t 10000`        : Change the time (in ms) before which a command is killed (min = 250)
+* `$ warden --timeout=10000` : Change the time (in ms) before which a command is killed (min = 250)
+
+* `$ warden -v`              : output the current version of Warden
+* `$ warden --version`       : output the current version of Warden
+
+* `$ warden -h`              : output help
+* `$ warden -help`           : output help
+
+* `$ warden --uninstall`     : uninstall this programm (you need to validate it). But ... you don't need this ;)
+
 ## Create a project file
 
 `warden --init` or `warden --i` to create automatically a `.warden.yml` files, used by Wardan for.
 The project file is **simply a YAML file**
+
+Because I'm lazy, `.warden.yml` is automatically reload when it changed 🐨
 
 ## Write your `.warden.yml`
 
@@ -49,6 +74,7 @@ watch:
 
 ### `files` parameter
 This option is the glob pattern of files.
+
 ### `git` option
 This option is facultative, you have some values:
   - **none** -> no git command
@@ -91,29 +117,6 @@ precommand:
     run: shards build
     git: add
 ```
-
-## Run Warden
-
-Simply run `warden` command, easy no?
-
-### Options
-
-* `$ warden -i`              : Init project file automatically
-* `$ warden --init`          : Init project file automatically
-
-* `$ warden -d 1500`         : change the delay (in ms) between to files watch (min = 250)
-* `$ warden --delay=1500`    : change the delay (in ms) between to files watch (min = 250)
-
-* `$ warden -t 10000`        : Change the time (in ms) before which a command is killed (min = 250)
-* `$ warden --timeout=10000` : Change the time (in ms) before which a command is killed (min = 250)
-
-* `$ warden -v`              : output the current version of Warden
-* `$ warden --version`       : output the current version of Warden
-
-* `$ warden -h`              : output help
-* `$ warden -help`           : output help
-
-* `$ warden --uninstall`  : uninstall this programm (you need to validate it). But ... you don't need this ;)
 
 ## Contributing
 
