@@ -18,13 +18,12 @@ filename = "config.yml"
 
 t_option = false
 
-# CONFIG
+# CONFIG - ugly but for the moment, it's work
 {% if `cat RELEASE`.chomp.stringify.size != 0 %}
 	filename = "/usr/share/warden/#{filename}"
 {% end %}
 
 config = Config.load_config? filename
-
 
 banner =  "#{"usage :".colorize(:dark_gray)} #{"warden".colorize(:green)} "
 banner += "#{"[-v|--version]".colorize(:light_green)}"
