@@ -9,14 +9,16 @@ Based on [Guardian](https://github.com/f/guardian), but better. :P
 ## Installation
 
 For **Linux**, just run `sudo ./install/linux.sh`
+
 It install this program into `/usr/bin/warden`, the config file into `/usr/share/warden/config.yml`, and an unstalling  script into `/usr/share/warden/uninstall.sh`.
+  
 
 ## Uninstallation (but you don't need it)
 
-For **Linux**:
- * You can run the following command `sudo warden --uninstall`
- * You can run `sudo /usr/share/warden/uninstall.sh`
- * You can also run `sudo rm -r /usr/share/warden/ /usr/bin/warden`
+* You can run the following command `sudo warden --uninstall`
+* You can run `sudo /usr/share/warden/uninstall.sh`
+* You can also run `sudo rm -r /usr/share/warden/ /usr/bin/warden`
+
 
 *N.B.:* all commands are equivalent, but build in option command is recommanded
 
