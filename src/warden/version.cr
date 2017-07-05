@@ -3,7 +3,6 @@ module Warden
 
   # format YYYY-MM-DD
   RELEASE_DATE = {{ `date +'%Y-%m-%d'`.chomp.stringify }}
-  puts RELEASE_DATE
 
   def self.print_version
     puts "#{"Warden".colorize(:cyan)} v#{VERSION} #{"(#{RELEASE_DATE})".colorize(:light_gray)}"
