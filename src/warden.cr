@@ -18,9 +18,11 @@ filename = "config.yml"
 
 t_option = false
 
-# CONFIG - ugly but for the moment, it's work
+release = false
+# CONFIG - ugly but for the moment, it's work, I search a prettier and more generic method ;)
 {% if `cat RELEASE`.chomp.stringify.size != 0 %}
 	filename = "/usr/share/warden/#{filename}"
+    release = true
 {% end %}
 
 config = Config.load_config? filename
@@ -34,16 +36,21 @@ if ARGV[0]?
     OptionParser.parse! do |opt|
         #opt.banner = banner
         opt.banner = "help : "
+
+        # VERSSION
         opt.on "-v", "--version", "Show the version" do
             Warden.print_version
             exit
         end
+
+        # HELP
         opt.on "-h", "--help", "Show this help" do
             puts opt
             exit
         end
 
-        opt.on "-d DELAY", "--delay=DELAY", "Show this help" do |delay|
+        # DELAY
+        opt.on "-d DELAY", "--delay=DELAY", "Delay in ms between two folder check" do |delay|
             begin
                 config.delay = delay.to_u32
             rescue
@@ -52,6 +59,7 @@ if ARGV[0]?
             end
         end
 
+        # TIMEOUT
         opt.on "-t TIMEOUT", "--timeout=TIMEOUT", "Timeout in ms for command " do |timeout|
             begin
                 unless timeout.to_u32 < 250_u32
@@ -66,15 +74,74 @@ if ARGV[0]?
             end
         end
 
-        opt.on "-i", "--init", "Generate " do
+        # UNINSTALL
+        opt.on "--uninstall", "uninstall this program, but ... you don't need to use it :P" do
+            
+            puts "Are you sure to uninstall this program? (yes/NO)"
+            ok = gets()
+            unless ok.nil?
+                unless ok.as(String).downcase == "yes"
+                    puts "The answer is no!"
+                    puts "Good decision ;)"
+                    exit 0
+                end
+            end
+
+            if release
+                puts "uninstallation:".colorize
+                begin
+                    FileUtils.rm Dir.glob("/usr/share/warden/*")
+                    puts "  - deletion files into the directory #{"/usr/share/warden/".colorize(:yellow)}"
+                rescue Errno
+                    puts "#{"/usr/bin/warden/*".colorize(:red)} don't want to be deleted - maybe a #{"'sudo'".colorize(:light_gray)} can resolve this problem"
+                    exit 1
+                end
+
+                begin
+                    if Dir.exists? "/usr/share/warden"
+                        Dir.rmdir "/usr/share/warden"
+                    end 
+
+                    puts "  - deletion of the directory #{"/usr/share/warden/".colorize(:yellow)}"
+                rescue Errno
+                    puts "#{"/usr/bin/warden/".colorize(:red)} folder don't want to be deleted - maybe a #{"'sudo'".colorize(:light_gray)} can resolve this problem"
+                    exit 1
+                end
+
+                # BINARY
+                begin
+                    if File.exists? "/usr/bin/warden"
+                       File.delete "/usr/bin/warden"
+                    else
+                        puts "déja del"
+                    end
+                    puts "  - deletion of the binary #{"/usr/bin/warden".colorize(:yellow)}"
+                rescue Errno
+
+                    puts "#{"/usr/bin/warden".colorize(:red)} don't want to be deleted - maybe a #{"'sudo'".colorize(:light_gray)} can resolve this problem"
+                    exit 1
+                end
+                puts "Uninstallation finished".colorize(:green)
+                puts
+                puts "Goodbye :)"
+            else
+                puts "You are not in a release, you don't have any files installed ;)".colorize(:cyan)
+            end
+            exit 0
+        end
+
+        # INIT
+        opt.on "-i", "--init", "Generate '#{config.target}' (project file), automatically based on '#{filename}' main config file" do
             Warden::Generator.new config
             exit
         end
 
+        # INVALID
         opt.invalid_option do
             puts opt
             exit 1
         end
+        # MISSING
         opt.missing_option do
             puts opt
             exit 1
