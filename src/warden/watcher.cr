@@ -192,6 +192,11 @@ module Warden
 				if  @project_mtime.nil? || @project_mtime.as(Time) < t
 					@project_mtime = t
 					@project = Config.load_project? @config.target
+					
+					unless @project.timeout.nil?
+						@config.timeout = @project.timeout.as UInt32
+					end
+
 					errase_arrow
 					puts "#{"\u{00B1}".colorize(:light_yellow)} #{"project file has been updated! (#{@config.target})".colorize(:yellow)}"
 					print_arrow

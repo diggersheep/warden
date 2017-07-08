@@ -18,18 +18,23 @@ timeout: 2000
 #    git   -> command git to run
 #             none | add | commit | push | pull
 precommand:
+  # README.md
+  - files: ./README.md
+    run:
+    git: add
+
   # crystal - sources
   - files: ./src/**/*.cr
     run: shards build
     git: add
   # crystal spec
   - files: ./spec/**/*.cr
-    run: "echo \"#{file} is changed\""
+    run:
     git: add
 
   # some crystal files
   - files: ./*.cr
-    run: "crystal run #{file}"
+    run: "crystal run \"#{file}\""
     git: none
   # shards
   - files: ./shard.yml
@@ -38,10 +43,10 @@ precommand:
 
   # C sources
   - files: ./src/*.c
-    run: "gcc -c #{file} -o #{basename}.o -O3 -Wall -Wextra"
+    run: "gcc -c \"#{file}\" -o \"#{basename}.o\" -O3 -Wall -Wextra"
     git: add
   - files: ./src/*.h
-    run: "gcc -c #{path}#{basename}.c -o #{basename}.o -O3 -Wall -Wextra"
+    run: "gcc -c \"#{path}#{basename}.c\" -o \"#{basename}.o\" -O3 -Wall -Wextra"
     git: add
   - files: ./src/main.c
     run: make -j
@@ -49,15 +54,15 @@ precommand:
 
   # python
   - files: ./**/*.py
-    run: "#{file} is changed"
+    run:
     git: add
   
   # java
   - files: ./**/*.java
-    run: "javac #{file}"
+    run: "javac \"#{file}\""
     git: add
 
   # shell / bash
   - files: ./**/*.sh
-    run: "#{file} is changed"
+    run: "\"#{file}\" is changed"
     git: none

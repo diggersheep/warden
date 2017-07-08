@@ -153,7 +153,7 @@ end
 project = Config.load_project? config.target
 
 # load project timeout
-if  !(project.timeout.nil?) && t_option
+if  !(project.timeout.nil?) && !t_option
     config.timeout = project.timeout.as UInt32
 end
 

@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.1.4
+- add `--uninstall` CLI option command
+
 ## 0.1.3
 - remove obsolete archive config (auto archive feature)
 
