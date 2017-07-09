@@ -1,6 +1,12 @@
 require "yaml"
 require "colorize"
 
+# TODO:
+#	- Add custom files timeout
+#	- add custom substitutions
+#		* sting literal (simple)
+#		* sub-substitution with height limit (complex)
+
 module Config
 	class FileNotExistsException < Exception end
 	class NotGitCmdException < Exception end
@@ -14,12 +20,24 @@ module Config
 		"push"
 	]
 
+	# mapping for custom substitutions
+	class YAML_sub
+		YAML.mapping(
+			key:   String,
+			value: String
+		)
+	end
+
 	# mapping of main config file
 	class YAML_Config
 		YAML.mapping(
 			target: String,
 			delay:  UInt32,
 			timeout: UInt32,
+			sub: {
+				type: Array(YAML_sub),
+				nilable: true
+			},
 			precommand: Array( YAML_Config_Command )
 		)
 	end

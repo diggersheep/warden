@@ -159,7 +159,7 @@ unless  project.timeout.nil? || t_option
     config.timeout = t
 end
 # load project delay
-unless project.timeout.nil? || t_option
+unless project.delay.nil? || t_option
     d = project.delay.as(UInt32) < 250_u32 ? 250_u32 : project.delay.as(UInt32)
     config.delay = d
 end
