@@ -25,9 +25,20 @@ module Config
 	end
 	class YAML_Config_Command
 		YAML.mapping(
-			files: String,
-			run:   String,
-			git:   String
+			files: {
+				type: String,
+				setter: false
+			},
+			run: {
+				type: String,
+				default: "",
+				setter: false
+			},
+			git: {
+				type: String,
+				default: "none",
+				setter: false
+			}
 		)
 	end
 
@@ -37,9 +48,13 @@ module Config
 			auto_commit_message: {
 				type: String,
 				key:  "auto-commit-message",
-				nilable: true
+				default: "\#{git-auto}"
 			},
 			timeout: {
+				type: UInt32,
+				nilable: true
+			},
+			delay: {
 				type: UInt32,
 				nilable: true
 			},
@@ -108,11 +123,6 @@ module Config
 			unless check_git e.git
 				raise YAML::ParseException.new "", 0, 0
 			end
-		end
-
-		#  auto complete
-		if conf.auto_commit_message.nil?
-			conf.auto_commit_message = "\#{git-auto}"
 		end
 
 		conf

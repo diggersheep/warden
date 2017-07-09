@@ -17,6 +17,7 @@ end
 filename = "config.yml"
 
 t_option = false
+d_option = false
 
 release = false
 # CONFIG - ugly but for the moment, it's work, I search a prettier and more generic method ;)
@@ -153,8 +154,14 @@ end
 project = Config.load_project? config.target
 
 # load project timeout
-if  !(project.timeout.nil?) && !t_option
-    config.timeout = project.timeout.as UInt32
+unless  project.timeout.nil? || t_option
+    t = project.timeout.as(UInt32) < 125_u32 ? 125_u32 : project.timeout.as(UInt32)
+    config.timeout = t
+end
+# load project delay
+unless project.timeout.nil? || t_option
+    d = project.delay.as(UInt32) < 250_u32 ? 250_u32 : project.delay.as(UInt32)
+    config.delay = d
 end
 
 # WATCHER
