@@ -193,8 +193,13 @@ module Warden
 					@project_mtime = t
 					@project = Config.load_project? @config.target
 					
-					unless @project.timeout.nil?
-						@config.timeout = @project.timeout.as UInt32
+					unless @project.timeout == 0_u32
+						t = @project.timeout < 125_u32 ? 125_u32 : @project.timeout
+						@config.timeout = t
+					end
+					unless @project.delay == 0_u32
+						d = @project.delay < 250_u32 ? 250_u32 : @project.delay
+						@config.delay = d
 					end
 
 					errase_arrow

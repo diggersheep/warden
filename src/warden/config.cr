@@ -70,11 +70,11 @@ module Config
 			},
 			timeout: {
 				type: UInt32,
-				nilable: true
+				default: 0_u32
 			},
 			delay: {
 				type: UInt32,
-				nilable: true
+				default: 0_u32
 			},
 			watch: Array(YAML_Config_Command)
 		)

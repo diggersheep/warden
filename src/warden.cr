@@ -154,12 +154,12 @@ end
 project = Config.load_project? config.target
 
 # load project timeout
-unless  project.timeout.nil? || t_option
+unless  project.timeout == 0_u32 || t_option
     t = project.timeout.as(UInt32) < 125_u32 ? 125_u32 : project.timeout.as(UInt32)
     config.timeout = t
 end
 # load project delay
-unless project.delay.nil? || t_option
+unless project.delay == 0_u32 || t_option
     d = project.delay.as(UInt32) < 250_u32 ? 250_u32 : project.delay.as(UInt32)
     config.delay = d
 end
