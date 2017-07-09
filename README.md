@@ -33,8 +33,8 @@ Simply run `warden` command, easy no?
 * `$ warden -i`              : Init project file automatically
 * `$ warden --init`          : Init project file automatically
 
-* `$ warden -d 1500`         : change the delay (in ms) between to files watch (min = 250)
-* `$ warden --delay=1500`    : change the delay (in ms) between to files watch (min = 250)
+* `$ warden -d 1500`         : change the delay (in ms) between two files watch (min = 250)
+* `$ warden --delay=1500`    : change the delay (in ms) between two files watch (min = 250)
 
 * `$ warden -t 10000`        : Change the time (in ms) before which a command is killed (min = 250)
 * `$ warden --timeout=10000` : Change the time (in ms) before which a command is killed (min = 250)
