@@ -56,6 +56,11 @@ module Config
 				type: String,
 				default: "none",
 				setter: false
+			},
+			timeout: {
+				type: UInt32,
+				default: 0_u32,
+				setter: false
 			}
 		)
 	end

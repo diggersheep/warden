@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.1.5
+- add custom `timeout` for each `watch` in project file (.warden.yml)
+
 ## 0.1.4
 - add `--uninstall` CLI option command
 

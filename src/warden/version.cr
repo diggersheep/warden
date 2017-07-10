@@ -1,5 +1,5 @@
 module Warden
-  VERSION = "0.1.4"
+  VERSION = "0.1.5"
 
   # format YYYY-MM-DD
   RELEASE_DATE = {{ `date +'%Y-%m-%d'`.chomp.stringify }}

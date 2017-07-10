@@ -7,16 +7,20 @@ require "colorize"
 
 module Warden
 	class Watcher
+
 		@config  : Config::YAML_Config
 		@project : Config::YAML_Project
 		@project_mtime : Time | Nil
 		@coef = 2_u8
 
+		@timeout : UInt32
+		@delay : UInt32
+
 		@added_files   : Array(String) # not used for now
 		@changed_files : Array(String) # not used for now
 		@removed_files : Array(String) # not used for now
 
-		@files : Array(NamedTuple(file: String, run: String, git: String, mtime: Time))
+		@files : Array(NamedTuple(file: String, run: String, git: String, timeout: UInt32, mtime: Time))
 
 		def initialize ( @config, @project )
 			begin
@@ -25,21 +29,27 @@ module Warden
 				@project_mtime = nil
 			end
 
+			@timeout = @config.timeout
+			@delay   = @config.delay
+
 			@added_files   = [] of String
 			@changed_files = [] of String
 			@removed_files = [] of String
 
-			@files = [] of NamedTuple(file: String, run: String, git: String, mtime: Time)
+			@files = [] of NamedTuple(file: String, run: String, git: String, timeout: UInt32, mtime: Time)
 
 			# check for each files in project config
 			@project.watch.each do |watcher| # project config
 				Dir.glob( watcher.files ).each do |file| # each files
 					if File.file? file
+						t = watcher.timeout < 125_u32 ? @config.timeout : watcher.timeout
+
 						begin
 							tmp = {
 								file:  file,
 								run:   sub_run(file, watcher.run),
 								git:   watcher.git,
+								timeout: t,
 								mtime: File::Stat.new(file).mtime
 							}
 							@files << tmp
@@ -83,7 +93,7 @@ module Warden
 
 		# return a boolean
 		# true if file already exists on "@files" attrubute and m_time is different
-		private def is_changed? ( f : NamedTuple(file: String, run: String, git: String, mtime: Time) ) : Bool
+		private def is_changed? ( f : NamedTuple(file: String, run: String, git: String, timeout: UInt32, mtime: Time) ) : Bool
 			@files.each do |file|
 				if (file[:file] == f[:file]) && (f[:mtime] != file[:mtime])
 					return true
@@ -92,7 +102,7 @@ module Warden
 			false
 		end
 
-		private def deleted? ( filename : String, new_files : Array(NamedTuple(file: String, run: String, git: String, mtime: Time)) )
+		private def deleted? ( filename : String, new_files : Array(NamedTuple(file: String, run: String, git: String, timeout: UInt32, mtime: Time)) )
 			# fichier supprimé si le fichier filename
 			# n'est pas dans new_files
 			
@@ -105,7 +115,7 @@ module Warden
 		end
 
 		# return an array of all deleted files
-		private def deleted_files ( files : Array(NamedTuple(file: String, run: String, git: String, mtime: Time)) )
+		private def deleted_files ( files : Array(NamedTuple(file: String, run: String, git: String, timeout: UInt32, mtime: Time)) )
 			tmp = typeof(@files).new
 
 			@files.each do |old_files|
@@ -118,13 +128,13 @@ module Warden
 		end
 
 		# run the following cmd
-		private def run_cmd ( cmd_str : String ) : Bool
+		private def run_cmd ( cmd_str : String, timeout : UInt32 ) : Bool
 			if cmd_str.size == 0
 				return true
 			end
 
 			puts "#{"$".colorize(:dark_gray)} #{cmd_str.colorize(:light_gray)}"
-			timer = Time.new + (@config.timeout / 1000.0).seconds
+			timer = Time.new + (timeout / 1000.0).seconds
 
 			# run cmd on a new processus
 			cmd = Process.new cmd_str, shell: true, output: true, input: true, error: true
@@ -133,7 +143,7 @@ module Warden
 			# implementation with sleep to take less ressources than
 			# with a "while" loop
 			spawn do
-				sleep (@config.timeout / 1000.0)
+				sleep (timeout / 1000.0)
 				unless cmd.terminated?
 					cmd.kill Signal::KILL
 					puts "    the command take more than #{(@config.timeout/1000.0).round(3)}s has been #{"killed".colorize(:red)} #{"(SIGKILL)".colorize(:dark_gray)}"
@@ -160,7 +170,7 @@ module Warden
 		end
 
 		# Run the following git command
-		private def run_git ( file : NamedTuple(file: String, run: String, git: String, mtime: Time) )
+		private def run_git ( file : NamedTuple(file: String, run: String, git: String, timeout: UInt32, mtime: Time) )
 			case file[:git]
 			when "none" #do nothing
 			when "add"
@@ -196,10 +206,14 @@ module Warden
 					unless @project.timeout == 0_u32
 						t = @project.timeout < 125_u32 ? 125_u32 : @project.timeout
 						@config.timeout = t
+					else
+						@config.timeout = @timeout
 					end
 					unless @project.delay == 0_u32
 						d = @project.delay < 250_u32 ? 250_u32 : @project.delay
 						@config.delay = d
+					else
+						@config.delay = @delay
 					end
 
 					errase_arrow
@@ -212,11 +226,14 @@ module Warden
 
 			@project.watch.each do |watcher| # project config
 				Dir.glob watcher.files do |file| # each files
+					t = watcher.timeout < 125_u32 ? @config.timeout : watcher.timeout
+					
 					begin
 						tmp = {
 							file: file,
 							run: sub_run(file, watcher.run),
 							git: watcher.git,
+							timeout: t,
 							mtime: File::Stat.new(file).mtime
 						}
 						files_bis << tmp
@@ -242,7 +259,7 @@ module Warden
 			new_files.each do |file|
 				errase_arrow
 				puts "#{"+".colorize(:light_green)} #{"added".colorize(:green)}   #{file[:file]}"
-				if run_cmd file[:run]
+				if run_cmd file[:run], file[:timeout]
 					run_git file
 				end
 				print_arrow
@@ -254,7 +271,7 @@ module Warden
 				errase_arrow
 				puts "#{"\u{00B1}".colorize(:light_yellow)} #{"changed".colorize(:yellow)} #{file[:file]}"
 				puts_diff file[:file]
-				if run_cmd file[:run]
+				if run_cmd file[:run], file[:timeout]
 					run_git file
 				end
 				print_arrow
