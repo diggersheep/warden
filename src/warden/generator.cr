@@ -14,11 +14,19 @@ module Warden
             @config.precommand.each do |watcher|
                 if Dir.glob(watcher.files).size > 0
                     msg << watcher.files
+                    puts "#{watcher.timeout} : #{watcher.files}"
 
                     data += "\n"
                     data += "  - files: #{watcher.files}\n"
-                    data += "    run: \"#{watcher.run}\"\n"
-                    data += "    git: #{watcher.git}\n"
+                    if watcher.run.size > 0
+                        data += "    run: \"#{watcher.run}\"\n"
+                    end
+                    if watcher.git.size > 0
+                        data += "    git: #{watcher.git}\n"
+                    end
+                    if watcher.timeout > 0_u32
+                        data += "    timeout: #{watcher.timeout}"
+                    end
                 end
             end
             

@@ -81,6 +81,10 @@ module Config
 				type: UInt32,
 				default: 0_u32
 			},
+			sub: {
+				type: Array(YAML_sub),
+				nilable: true
+			},
 			watch: Array(YAML_Config_Command)
 		)
 	end
@@ -122,6 +126,8 @@ module Config
 		if conf.timeout < Warden::MIN_TIMEOUT
 			conf.timeout = Warden::MIN_TIMEOUT
 		end
+
+		conf.precommand.each { |e| puts "#{e.timeout} : #{e.files}" }
 
 		conf
 	end

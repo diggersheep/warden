@@ -1,7 +1,9 @@
 # name of the file in any project
 target: .warden.yml
-# delay in ms between 2 check ( min = 250ms )
-delay: 1000
+
+# delay in ms between two check ( min = 250ms )
+delay:   1000
+# delay be
 timeout: 2000
 
 # pre implemented commands
@@ -13,35 +15,50 @@ timeout: 2000
 #    #{cwd}      -> idem. More natural for C/C++/python users
 #    #{dirname}  -> name of the current direcory
 #
-#  - files -> glob for file analysis
-#    run   -> command to run for the files
-#    git   -> command git to run
-#             none | add | commit | push | pull
+#  - files   -> glob for file analysis
+#    run     -> command to run for the files
+#    git     -> command git to run (none|add|commit|push|pull)
+#    timeout -> custom timeout
+
 precommand:
   # README.md
   - files: ./README.md
-    run:
+    git: add
+  # changelog.md
+  - files: ./changelog.md
+    git: add
+  # CHANGELOG
+  - files: ./CHANGELOG.md
+    git: add
+
+  # LICENCE
+  - files: ./LICENCE
+    git: add
+  
+  # travis file
+  - files: ./.travis.yml
     git: add
 
   # crystal - sources
   - files: ./src/**/*.cr
     run: shards build
     git: add
+    timeout: 10000
   # crystal spec
   - files: ./spec/**/*.cr
-    run:
     git: add
 
   # some crystal files
   - files: ./*.cr
     run: "crystal run \"#{file}\""
-    git: none
   # shards
   - files: ./shard.yml
     run: shards update
     git: add
+    timeout: 10000
 
-  # C sources
+
+  # C sources (basic)
   - files: ./src/*.c
     run: "gcc -c \"#{file}\" -o \"#{basename}.o\" -O3 -Wall -Wextra"
     git: add
@@ -54,7 +71,6 @@ precommand:
 
   # python
   - files: ./**/*.py
-    run:
     git: add
   
   # java
@@ -64,5 +80,3 @@ precommand:
 
   # shell / bash
   - files: ./**/*.sh
-    run: "\"#{file}\" is changed"
-    git: none
