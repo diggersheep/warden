@@ -97,9 +97,6 @@ module Config
 
 	# load main configuration file and check some values
 	def self.load_config ( filename : String ) : Config::YAML_Config
-		min_timeout = 100_u32
-		min_delay   = 250_u32
-
 		data = "" # future file data
 
 		unless File.file? filename # check if it's a file'
@@ -119,11 +116,11 @@ module Config
 			end
 		end
 
-		if conf.delay < min_delay
-			conf.delay = min_delay
+		if conf.delay < Warden::MIN_DELAY
+			conf.delay = Warden::MIN_DELAY
 		end
-		if conf.timeout < min_timeout
-			conf.timeout = min_timeout
+		if conf.timeout < Warden::MIN_TIMEOUT
+			conf.timeout = Warden::MIN_TIMEOUT
 		end
 
 		conf

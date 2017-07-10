@@ -42,7 +42,7 @@ module Warden
 			@project.watch.each do |watcher| # project config
 				Dir.glob( watcher.files ).each do |file| # each files
 					if File.file? file
-						t = watcher.timeout < 125_u32 ? @config.timeout : watcher.timeout
+						t = watcher.timeout < Warden::MIN_TIMEOUT ? @config.timeout : watcher.timeout
 
 						begin
 							tmp = {
@@ -163,7 +163,6 @@ module Warden
 					if git_stat.size > 1
 						str = git_stat[1,git_stat.size - 1].join(", ").colorize(:yellow)
 						puts "  #{"->".colorize(:light_yellow)} #{str}"
-
 					end
 				end
 			end
@@ -178,7 +177,7 @@ module Warden
 				puts "  git add #{file[:file]}".colorize(:dark_gray)
 				unless @added_files.includes? file[:file]
 					@added_files << file[:file]
-				end                                      
+				end                                
 			when "commit"
 				@added_files.clear
 			when "pull"
@@ -198,19 +197,22 @@ module Warden
 
 			# check .warden.yml file and reload it if necessary
 			begin
-				t = File::Stat.new(@config.target).mtime
-				if  @project_mtime.nil? || @project_mtime.as(Time) < t
-					@project_mtime = t
+				time = File::Stat.new(@config.target).mtime
+				if  @project_mtime.nil? || @project_mtime.as(Time) < time
+					@project_mtime = time
 					@project = Config.load_project? @config.target
 					
+					# load project timeout or default timeout
 					unless @project.timeout == 0_u32
-						t = @project.timeout < 125_u32 ? 125_u32 : @project.timeout
+						t = @project.timeout < Warden::MIN_TIMEOUT ? Warden::MIN_TIMEOUT : @project.timeout
 						@config.timeout = t
 					else
 						@config.timeout = @timeout
 					end
+
+					# load project delay of default delay
 					unless @project.delay == 0_u32
-						d = @project.delay < 250_u32 ? 250_u32 : @project.delay
+						d = @project.delay < Warden::MIN_DELAY ? Warden::MIN_DELAY : @project.delay
 						@config.delay = d
 					else
 						@config.delay = @delay
@@ -226,7 +228,7 @@ module Warden
 
 			@project.watch.each do |watcher| # project config
 				Dir.glob watcher.files do |file| # each files
-					t = watcher.timeout < 125_u32 ? @config.timeout : watcher.timeout
+					t = watcher.timeout < Warden::MIN_TIMEOUT ? @config.timeout : watcher.timeout
 					
 					begin
 						tmp = {
