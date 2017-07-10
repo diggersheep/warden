@@ -60,18 +60,20 @@ For your `.warden.yml` file, you have some simple parameters:
 ```yaml
 
 delay: 1000 # change the delay (in ms) between to files watch (min = 250) [Facultative]
-timeout: 10000 # Change the time (in ms) before which a command is killed (min = 250) [Facultative]
+timeout: 2000 # Change the time (in ms) before which a command is killed (min = 250) [Facultative]
 
 watch:
+
   - files: ./src/**/*.cr # all files in src and subdirectories
     run: shards build    # command to run when a file is changed
     git: add             # git command to play when a file is changed
+    timeout: 10000       # it's timeout just for these files (useful for compilation)
   
   - files: ./*.cr                               # all .cr in this folder
     run: "crystal build #{file} -o #{basename}" # run for exemple 'crystal build main.cr main'
     git: none                                   # no git command 
     
-  - files: ./*.md # run no command for every .md in this folder
+  - files: ./*.md # run no command for every ".md" in this folder, simply notify you when it changed
 ```
 
 ### `files` parameter
@@ -99,7 +101,7 @@ Exemple for the file `./src/warden/version.cr` in `warden` folder:
   - `#{pwd}` -> print the current directory, it's simply bash `pwd` command
   - `#{cwd}` -> like `pwd` but for those who prefer `C/C++` style ;)
 
-**_P.S.:_** You can propose new substitutions :) 
+**_P.S.:_** You can propose new substitutions :)
 
 
 ## Your own configuration `config.yml`
@@ -110,7 +112,7 @@ You have similary configuration with `.warden.yml` like:
 
 `target` is the target of the project file, by default it's `.warden.yml`
 
-The last parameter is the `precommand` parameter, it's exactly like `watch` parameter in project file, but it used in `$ warden --init` for auto configuration, please, don't fuck up your parameter ;)
+The last parameter is the `precommand` parameter, it's exactly like `watch` parameter in project file, but it used in `$ warden --init` for auto configuration, please, don't fucked up your parameter ;)
 
 ```yaml
 precommand:
@@ -118,6 +120,7 @@ precommand:
   - files: ./src/**/*.cr
     run: shards build
     git: add
+  # etc, ...
 ```
 
 ## Contributing
