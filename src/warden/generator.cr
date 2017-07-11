@@ -14,7 +14,6 @@ module Warden
             @config.precommand.each do |watcher|
                 if Dir.glob(watcher.files).size > 0
                     msg << watcher.files
-                    puts "#{watcher.timeout} : #{watcher.files}"
 
                     data += "\n"
                     data += "  - files: #{watcher.files}\n"
@@ -53,8 +52,6 @@ module Warden
         
         private def void_project
             s  = "  - files: ./**/*\n"
-            s += "    run: echo \"\#\{file\} is changed\"\n"
-            s += "    git: none\n"
             s
         end
     end

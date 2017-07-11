@@ -127,8 +127,6 @@ module Config
 			conf.timeout = Warden::MIN_TIMEOUT
 		end
 
-		conf.precommand.each { |e| puts "#{e.timeout} : #{e.files}" }
-
 		conf
 	end
 
