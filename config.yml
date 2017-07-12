@@ -1,6 +1,8 @@
 # name of the file in any project
 target: .warden.yml
 
+max-substitution-layer: 30
+
 # delay in ms between two check ( min = 250ms )
 delay:   1000
 # delay be

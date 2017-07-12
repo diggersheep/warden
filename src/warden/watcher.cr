@@ -22,12 +22,17 @@ module Warden
 
 		@files : Array(NamedTuple(file: String, run: String, git: String, timeout: UInt32, mtime: Time))
 
+		@subs : Config::Sub
+
 		def initialize ( @config, @project )
 			begin
 				@project_mtime = File::Stat.new(@config.target).mtime
 			rescue
 				@project_mtime = nil
 			end
+
+			@subs = Config::Sub.new @project.sub
+			(1..@config.max_substitution_layer).each { @subs.multi_sub }
 
 			@timeout = @config.timeout
 			@delay   = @config.delay
@@ -325,6 +330,10 @@ module Warden
 
 		# subsitutions for running commands
 		private def sub_run ( filename : String, cmd : String )
+			# custom subs
+			cmd = @subs.sub cmd
+
+			# static subs
 			cmd = cmd.gsub "\#\{\}", ""
 			cmd = cmd.gsub "\#\{file\}", filename
 			cmd = cmd.gsub "\#\{path\}", (File.dirname(filename) + File::SEPARATOR)
@@ -333,7 +342,10 @@ module Warden
 			cmd = cmd.gsub "\#\{pwd\}", FileUtils.pwd
 			cmd = cmd.gsub "\#\{cwd\}", FileUtils.pwd
 			cmd = cmd.gsub "\#\{dirname\}", FileUtils.pwd.split(File::SEPARATOR)[-1]
+
+			# general sub
 			cmd = cmd.gsub /\#\{*\}/, filename
+			
 			cmd
 		end
 

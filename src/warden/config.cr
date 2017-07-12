@@ -2,7 +2,6 @@ require "yaml"
 require "colorize"
 
 # TODO:
-#	- Add custom files timeout
 #	- add custom substitutions
 #		* sting literal (simple)
 #		* sub-substitution with height limit (complex)
@@ -32,6 +31,10 @@ module Config
 	class YAML_Config
 		YAML.mapping(
 			target: String,
+			max_substitution_layer: {
+				type: UInt32,
+				key: "max-substitution-layer"
+			},
 			delay:  UInt32,
 			timeout: UInt32,
 			sub: {
@@ -113,6 +116,7 @@ module Config
 		# parse yaml file (not handle exception)
 		conf = YAML_Config.from_yaml data # raise YAML::ParseException
 
+
 		conf.precommand.each do |e|
 			unless check_git e.git
 				# invalid YAML variable
@@ -120,12 +124,23 @@ module Config
 			end
 		end
 
+
 		if conf.delay < Warden::MIN_DELAY
 			conf.delay = Warden::MIN_DELAY
 		end
 		if conf.timeout < Warden::MIN_TIMEOUT
 			conf.timeout = Warden::MIN_TIMEOUT
 		end
+
+
+		layer = conf.max_substitution_layer
+		if layer < Warden::MIN_SUB_LAYER
+			layer = Warden::MIN_SUB_LAYER
+		end
+		if layer > Warden::MAX_SUB_LAYER
+			layer = Warden::MAX_SUB_LAYER
+		end
+		conf.max_substitution_layer = layer
 
 		conf
 	end
