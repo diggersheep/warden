@@ -1,2 +1,6 @@
-language: crystal
+language: generic
+sudo: require
+dist: trusty
+
+
 
