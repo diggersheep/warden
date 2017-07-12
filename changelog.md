@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.2.0
+- add custom `substitutions`
+- refesh some code porition
+
 ## 0.1.5
 - add custom `timeout` for each `watch` in project file (.warden.yml)
 
