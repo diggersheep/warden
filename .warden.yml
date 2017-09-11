@@ -1,9 +1,8 @@
-auto-commit-message: "#{git-auto}"
 watch:
-
   - files: ./*.cr
     run: "crystal build #{file}"
     git: none
+    timeout: 5000
 
   - files: ./src/**/*.cr
     run: "shards build"

@@ -151,7 +151,7 @@ module Warden
 				sleep (timeout / 1000.0)
 				unless cmd.terminated?
 					cmd.kill Signal::KILL
-					puts "    the command take more than #{(@config.timeout/1000.0).round(3)}s has been #{"killed".colorize(:red)} #{"(SIGKILL)".colorize(:dark_gray)}"
+					puts "    the command take more than #{(@config.timeout/1000.0).round(3)}s and has been #{"killed".colorize(:red)} #{"(SIGKILL)".colorize(:dark_gray)}"
 				end
 			end
 
@@ -343,12 +343,13 @@ module Warden
 			cmd = cmd.gsub "\#\{cwd\}", FileUtils.pwd
 			cmd = cmd.gsub "\#\{dirname\}", FileUtils.pwd.split(File::SEPARATOR)[-1]
 
-			# general sub
+			# general sub (delete any non-system substitution)
 			cmd = cmd.gsub /\#\{*\}/, filename
 			
 			cmd
 		end
 
+		# event loop (run forever)
 		def run
 			while true
 				iter

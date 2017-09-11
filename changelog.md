@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.2.1
+- correction of some texts
+
 ## 0.2.0
 - add custom `substitutions`
 - refesh some code porition

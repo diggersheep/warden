@@ -28,14 +28,8 @@ release = false
 
 config = Config.load_config? filename
 
-banner =  "#{"usage :".colorize(:dark_gray)} #{"warden".colorize(:green)} "
-banner += "#{"[-v|--version]".colorize(:light_green)}"
-banner += "#{"[-h|--help]".colorize(:light_green)}"
-
-
 if ARGV[0]?
     OptionParser.parse! do |opt|
-        #opt.banner = banner
         opt.banner = "help : "
 
         # VERSSION
@@ -76,14 +70,14 @@ if ARGV[0]?
         end
 
         # UNINSTALL
-        opt.on "--uninstall", "uninstall this program, but ... you don't need to use it :P" do
+        opt.on "--uninstall", "uninstall this program, but ... You don't need to use it :P" do
             
             puts "Are you sure to uninstall this program? (yes/NO)"
             ok = gets()
             unless ok.nil?
                 unless ok.as(String).downcase == "yes"
                     puts "The answer is no!"
-                    puts "Good decision ;)"
+                    puts "Good choice ;)"
                     exit 0
                 end
             end
