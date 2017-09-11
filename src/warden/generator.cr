@@ -5,12 +5,13 @@ module Warden
         @config  : Config::YAML_Config
 
         def initialize ( @config )
-            project =  "auto-commit-message: \"\#\{git-auto\}\"\n"
-            project += "watch:\n"
+            project = "watch:\n"
 
             msg = [] of String
 
             data = ""
+
+			# seach with 
             @config.precommand.each do |watcher|
                 if Dir.glob(watcher.files).size > 0
                     msg << watcher.files

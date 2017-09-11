@@ -71,11 +71,6 @@ module Config
 	# mapping of project config file
 	class YAML_Project
 		YAML.mapping(
-			auto_commit_message: {
-				type: String,
-				key:  "auto-commit-message",
-				default: "\#{git-auto}"
-			},
 			timeout: {
 				type: UInt32,
 				default: 0_u32
